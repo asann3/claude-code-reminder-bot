@@ -33,6 +33,11 @@ export class ReminderStorage {
             return await this.updateReminder(request);
           }
           break;
+        case 'DELETE':
+          if (url.pathname.startsWith('/reminders/')) {
+            return await this.deleteReminder(request);
+          }
+          break;
         default:
           return new Response('Method not allowed', { status: 405 });
       }
@@ -120,6 +125,27 @@ export class ReminderStorage {
     await this.state.storage.put(`reminder:${id}`, updated);
 
     return new Response(JSON.stringify(updated), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  private async deleteReminder(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    const id = url.pathname.split('/')[2];
+
+    if (!id) {
+      return new Response('Missing reminder ID', { status: 400 });
+    }
+
+    const existing = await this.state.storage.get<Reminder>(`reminder:${id}`);
+
+    if (!existing) {
+      return new Response('Reminder not found', { status: 404 });
+    }
+
+    await this.state.storage.delete(`reminder:${id}`);
+
+    return new Response(JSON.stringify({ success: true }), {
       headers: { 'Content-Type': 'application/json' },
     });
   }

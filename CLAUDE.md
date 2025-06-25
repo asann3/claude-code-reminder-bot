@@ -58,11 +58,14 @@ Reminder management using Durable Objects:
 - `GET /reminders?userId=`: Get user's reminders list
 - `GET /reminders/due`: Get due reminders
 - `PUT /reminders/:id`: Update reminder
+- `DELETE /reminders/:id`: Delete reminder
 
 ### Available Commands
 
-- `/remind <message> <time>`: Set reminder (time format: 5m, 1h, 2d)
-- `/reminders`: Display active reminders list
+- `/remind <message> <time>`: Set reminder (time format: 5m, 1h, 2d, 2024-12-25)
+- `/reminders`: Display active reminders list  
+- `/delete`: Display deletable reminders list with IDs
+- `/delete <id>`: Delete reminder by ID
 
 ## Setup Requirements
 

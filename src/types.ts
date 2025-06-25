@@ -44,6 +44,9 @@ export interface DiscordEmbed {
     value: string;
     inline?: boolean;
   }>;
+  footer?: {
+    text: string;
+  };
 }
 
 export interface InteractionData {

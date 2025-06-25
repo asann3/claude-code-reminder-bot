@@ -115,15 +115,15 @@ src/
 
 ### File Usage
 
-- **`.env`**: Wrangler CLI configuration (account ID)
-- **`.dev.vars`**: Local Worker environment variables
-- **Production**: Use `wrangler secret put` for sensitive data
+- **`.env`**: Wrangler CLI configuration (Cloudflare account ID only)
+- **`.dev.vars`**: All Worker environment variables including Discord settings
+- **Production**: Use `wrangler secret put` for sensitive Discord data
 
 ### Why This Separation?
 
-- `.env` affects Wrangler CLI behavior
-- `.dev.vars` are injected into Worker during local development
-- Production secrets are encrypted and managed by Cloudflare
+- `.env` contains only Wrangler CLI configuration (non-sensitive account info)
+- `.dev.vars` contains all Worker runtime variables and is used by both `wrangler dev` and deployment scripts
+- Production secrets are encrypted and managed by Cloudflare's secure storage
 
 ## Architecture Notes
 

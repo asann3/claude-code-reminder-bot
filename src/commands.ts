@@ -205,7 +205,7 @@ export async function handleRemindersCommand(
     let description = '';
     reminders.forEach((reminder, index) => {
       const timeStr = `<t:${reminder.reminderTime}:R>`;
-      description += `**${index + 1}.** ${reminder.message}\n⏰ ${timeStr}\n\n`;
+      description += `**${index + 1}.** ${reminder.message}\n⏰ ${timeStr}\n🆔 ID: \`${reminder.id}\`\n\n`;
     });
 
     const embed: DiscordEmbed = {
@@ -213,6 +213,9 @@ export async function handleRemindersCommand(
       description,
       color: 0x0099ff,
       timestamp: new Date().toISOString(),
+      footer: {
+        text: 'リマインダーを削除するには /delete <ID> を使用してください',
+      },
     };
 
     return {
@@ -223,6 +226,118 @@ export async function handleRemindersCommand(
     };
   } catch (error) {
     console.error('Error fetching reminders:', error);
+    return {
+      type: 4,
+      data: {
+        content: '❌ リマインダーの取得に失敗しました。',
+        flags: 64,
+      },
+    };
+  }
+}
+
+export async function handleDeleteCommand(
+  interaction: DiscordInteraction,
+  env: Environment
+): Promise<CommandResponse> {
+  const options = interaction.data?.options;
+  const idOption = options?.find((opt) => opt.name === 'id');
+  const userId = interaction.member?.user.id ?? interaction.user?.id;
+
+  if (!userId) {
+    return {
+      type: 4,
+      data: {
+        content: '⚠️ ユーザー情報が取得できません。',
+        flags: 64,
+      },
+    };
+  }
+
+  try {
+    const storageRequest = new Request(
+      `https://reminder-storage/reminders?userId=${userId}`,
+      { method: 'GET' }
+    );
+
+    const storageId = env.REMINDER_STORAGE.idFromName('default');
+    const storage = env.REMINDER_STORAGE.get(storageId);
+    const storageResponse = await storage.fetch(storageRequest);
+
+    if (!storageResponse.ok) {
+      throw new Error('Failed to fetch reminders');
+    }
+
+    const reminders = (await storageResponse.json()) as Reminder[];
+
+    if (reminders.length === 0) {
+      return {
+        type: 4,
+        data: {
+          content: '📝 削除できるリマインダーはありません。',
+        },
+      };
+    }
+
+    // IDが指定されている場合は削除実行
+    if (idOption?.value) {
+      const reminderId = idOption.value;
+      const targetReminder = reminders.find((r) => r.id === reminderId);
+
+      if (!targetReminder) {
+        return {
+          type: 4,
+          data: {
+            content:
+              '❌ 指定されたIDのリマインダーが見つからないか、あなたのリマインダーではありません。',
+            flags: 64,
+          },
+        };
+      }
+
+      // 削除実行
+      const deleteRequest = new Request(
+        `https://reminder-storage/reminders/${reminderId}`,
+        { method: 'DELETE' }
+      );
+
+      const deleteResponse = await storage.fetch(deleteRequest);
+
+      if (!deleteResponse.ok) {
+        throw new Error('Failed to delete reminder');
+      }
+
+      return {
+        type: 4,
+        data: {
+          content: `✅ リマインダーを削除しました:\n📝 **メッセージ**: ${targetReminder.message}`,
+        },
+      };
+    }
+
+    // IDが指定されていない場合は一覧表示
+    let description =
+      '削除したいリマインダーのIDをコピーして、`/delete <ID>` を実行してください:\n\n';
+    reminders.forEach((reminder, index) => {
+      const timeStr = `<t:${reminder.reminderTime}:R>`;
+      description += `**${index + 1}.** ${reminder.message}\n⏰ ${timeStr}\n🆔 ID: \`${reminder.id}\`\n\n`;
+    });
+
+    const embed: DiscordEmbed = {
+      title: '🗑️ リマインダー削除',
+      description,
+      color: 0xff4444,
+      timestamp: new Date().toISOString(),
+    };
+
+    return {
+      type: 4,
+      data: {
+        embeds: [embed],
+      },
+    };
+  } catch (error) {
+    console.error('Error in delete command:', error);
     return {
       type: 4,
       data: {

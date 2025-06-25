@@ -1,4 +1,7 @@
-import 'dotenv/config';
+import { config } from 'dotenv';
+
+// Load .dev.vars for local development
+config({ path: '.dev.vars' });
 
 interface SlashCommand {
   name: string;
@@ -33,6 +36,18 @@ const commands: SlashCommand[] = [
   {
     name: 'reminders',
     description: '設定中のリマインダー一覧を表示します',
+  },
+  {
+    name: 'delete',
+    description: 'リマインダーを削除します',
+    options: [
+      {
+        type: 3, // STRING
+        name: 'id',
+        description: '削除するリマインダーのID (省略すると一覧表示)',
+        required: false,
+      },
+    ],
   },
 ];
 

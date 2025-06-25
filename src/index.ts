@@ -1,5 +1,9 @@
 import { verifyKey } from 'discord-interactions';
-import { handleRemindCommand, handleRemindersCommand } from './commands';
+import {
+  handleDeleteCommand,
+  handleRemindCommand,
+  handleRemindersCommand,
+} from './commands';
 import { ReminderStorage } from './storage';
 import type { CommandResponse, DiscordInteraction, Environment } from './types';
 
@@ -59,6 +63,9 @@ async function handleDiscordInteraction(
         break;
       case 'reminders':
         response = await handleRemindersCommand(interaction, env);
+        break;
+      case 'delete':
+        response = await handleDeleteCommand(interaction, env);
         break;
       default:
         response = {
