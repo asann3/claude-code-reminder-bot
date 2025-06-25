@@ -73,9 +73,12 @@ export class ReminderStorage {
   private async getReminders(request: Request): Promise<Response> {
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
+    const guildId = url.searchParams.get('guildId');
 
-    if (!userId) {
-      return new Response('Missing userId parameter', { status: 400 });
+    if (!userId || !guildId) {
+      return new Response('Missing userId or guildId parameter', {
+        status: 400,
+      });
     }
 
     const reminders = await this.state.storage.list<Reminder>({
@@ -83,7 +86,12 @@ export class ReminderStorage {
     });
 
     const userReminders = Array.from(reminders.values())
-      .filter((reminder) => reminder.userId === userId && reminder.isActive)
+      .filter(
+        (reminder) =>
+          reminder.userId === userId &&
+          reminder.guildId === guildId &&
+          reminder.isActive
+      )
       .sort((a, b) => a.reminderTime - b.reminderTime);
 
     return new Response(JSON.stringify(userReminders), {

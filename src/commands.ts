@@ -166,12 +166,13 @@ export async function handleRemindersCommand(
   env: Environment
 ): Promise<CommandResponse> {
   const userId = interaction.member?.user.id ?? interaction.user?.id;
+  const guildId = interaction.guild_id;
 
-  if (!userId) {
+  if (!userId || !guildId) {
     return {
       type: 4,
       data: {
-        content: '⚠️ ユーザー情報が取得できません。',
+        content: '⚠️ ユーザー情報またはサーバー情報が取得できません。',
         flags: 64,
       },
     };
@@ -179,7 +180,7 @@ export async function handleRemindersCommand(
 
   try {
     const storageRequest = new Request(
-      `https://reminder-storage/reminders?userId=${userId}`,
+      `https://reminder-storage/reminders?userId=${userId}&guildId=${guildId}`,
       { method: 'GET' }
     );
 
@@ -243,12 +244,13 @@ export async function handleDeleteCommand(
   const options = interaction.data?.options;
   const idOption = options?.find((opt) => opt.name === 'id');
   const userId = interaction.member?.user.id ?? interaction.user?.id;
+  const guildId = interaction.guild_id;
 
-  if (!userId) {
+  if (!userId || !guildId) {
     return {
       type: 4,
       data: {
-        content: '⚠️ ユーザー情報が取得できません。',
+        content: '⚠️ ユーザー情報またはサーバー情報が取得できません。',
         flags: 64,
       },
     };
@@ -256,7 +258,7 @@ export async function handleDeleteCommand(
 
   try {
     const storageRequest = new Request(
-      `https://reminder-storage/reminders?userId=${userId}`,
+      `https://reminder-storage/reminders?userId=${userId}&guildId=${guildId}`,
       { method: 'GET' }
     );
 
