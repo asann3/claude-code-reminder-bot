@@ -61,7 +61,6 @@ A TypeScript Discord bot running on Cloudflare Workers that provides advanced re
    DISCORD_APPLICATION_ID=your_discord_application_id
    DISCORD_PUBLIC_KEY=your_discord_public_key
    DISCORD_TOKEN=your_discord_bot_token
-   DISCORD_GUILD_ID=your_test_guild_id
    ```
 
 ### Installation & Setup
@@ -73,7 +72,7 @@ pnpm install
 # Login to Cloudflare
 wrangler login
 
-# Deploy Discord commands (development)
+# Deploy Discord commands (global)
 pnpm tsx deploy-commands.ts
 
 # Start local development
@@ -124,6 +123,10 @@ src/
 - `.env` contains only Wrangler CLI configuration (non-sensitive account info)
 - `.dev.vars` contains all Worker runtime variables and is used by both `wrangler dev` and deployment scripts
 - Production secrets are encrypted and managed by Cloudflare's secure storage
+
+### Command Registration
+
+The bot uses **global commands** which are available in all servers where the bot is invited. Global commands may take up to 1 hour to propagate across all Discord servers after deployment.
 
 ## Architecture Notes
 

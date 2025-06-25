@@ -72,9 +72,16 @@ Reminder management using Durable Objects:
 1. Set up Cloudflare Workers environment
 2. Create `.env` file based on `.env.example`
 3. Create application in Discord Developer Portal
-4. Configure environment variables in `wrangler.toml`
-5. Register slash commands with `pnpm tsx deploy-commands.ts`
+4. Create `.dev.vars` file based on `.dev.vars.example`
+5. Register global slash commands with `pnpm tsx deploy-commands.ts`
 6. Deploy Worker with `pnpm deploy`
+
+### Command Registration
+
+- **Global Commands**: Commands available in all servers where the bot is invited
+- **Guild Commands**: Commands available only in specified server (for development)
+- Current setup uses **Global Commands** for production deployment
+- Global commands may take up to 1 hour to propagate across all Discord servers
 
 ## TypeScript Configuration
 
