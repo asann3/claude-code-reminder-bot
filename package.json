@@ -1,0 +1,45 @@
+{
+  "name": "discord-reminder-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for setting reminders on Cloudflare Workers",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "type-check": "tsc --noEmit",
+    "lint": "biome check src/",
+    "lint:fix": "biome check --write src/",
+    "format": "biome format --write src/",
+    "prepare": "husky install"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "reminder",
+    "cloudflare",
+    "workers"
+  ],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@8.0.0",
+  "dependencies": {
+    "discord-interactions": "^3.4.0",
+    "dotenv": "^16.5.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.4.1",
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "@types/node": "^20.10.6",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3",
+    "wrangler": "^3.22.1"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,js}": [
+      "biome check --write",
+      "biome format --write"
+    ]
+  }
+}

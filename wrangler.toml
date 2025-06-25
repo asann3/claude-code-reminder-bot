@@ -1,0 +1,16 @@
+name = "discord-reminder-bot"
+main = "src/index.ts"
+compatibility_date = "2023-12-18"
+
+[triggers]
+crons = ["* * * * *"]
+
+
+[durable_objects]
+bindings = [
+  { name = "REMINDER_STORAGE", class_name = "ReminderStorage" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ReminderStorage"]
