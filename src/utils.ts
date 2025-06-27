@@ -59,6 +59,19 @@ export function createSuccessResponse(data: unknown): Response {
   });
 }
 
+function convertToJST(date: Date): Date {
+  const jstOffset = 9 * 60;
+  const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+  return new Date(utc + jstOffset * 60000);
+}
+
+function createJSTDate(dateStr: string, hour = 0, minute = 0): Date {
+  const date = new Date(
+    `${dateStr}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00+09:00`
+  );
+  return date;
+}
+
 export function parseDateTimeString(dateTimeStr: string): {
   targetDate: Date;
   notificationTimes: Array<{
@@ -69,7 +82,6 @@ export function parseDateTimeString(dateTimeStr: string): {
   originalTime: string;
   actualDeadline: string;
 } | null {
-  // Format: YYYY-MM-DD or YYYY-MM-DD HH:MM
   const dateTimeRegex = /^(\d{4}-\d{2}-\d{2})(?:\s+(\d{1,2}):(\d{2}))?$/;
   const match = dateTimeStr.match(dateTimeRegex);
 
@@ -86,45 +98,49 @@ export function parseDateTimeString(dateTimeStr: string): {
 
   // 00:00指定の場合は前日の23:59を締切とする
   if (hour === 0 && minute === 0) {
-    const previousDay = new Date(`${dateStr}T00:00:00`);
+    const targetDate = createJSTDate(dateStr, 0, 0);
+    const previousDay = new Date(targetDate);
     previousDay.setDate(previousDay.getDate() - 1);
     previousDay.setHours(23, 59, 0, 0);
     actualDeadlineDate = previousDay;
-    actualDeadlineStr = `${previousDay.toISOString().split('T')[0]} 23:59`;
+    const jstPreviousDay = convertToJST(previousDay);
+    actualDeadlineStr = `${jstPreviousDay.toISOString().split('T')[0]} 23:59`;
   } else {
-    actualDeadlineDate = new Date(
-      `${dateStr}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`
-    );
+    actualDeadlineDate = createJSTDate(dateStr, hour, minute);
     actualDeadlineStr = `${dateStr} ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
   }
 
   if (Number.isNaN(actualDeadlineDate.getTime())) return null;
 
-  const deadlineTimestamp = Math.floor(actualDeadlineDate.getTime() / 1000);
   const threeDaysBeforeDate = new Date(actualDeadlineDate);
   threeDaysBeforeDate.setDate(threeDaysBeforeDate.getDate() - 3);
-  threeDaysBeforeDate.setHours(0, 0, 0, 0);
+
+  // JSTの日付文字列を取得してJST 0時を作成
+  const threeDaysBeforeDateStr = convertToJST(threeDaysBeforeDate)
+    .toISOString()
+    .split('T')[0];
+  const threeDaysBeforeJST = createJSTDate(threeDaysBeforeDateStr ?? '', 0, 0);
   const threeDaysBeforeTimestamp = Math.floor(
-    threeDaysBeforeDate.getTime() / 1000
+    threeDaysBeforeJST.getTime() / 1000
   );
 
   const notificationTimes = [];
 
-  // 3日前の00:00に通知
+  // 3日前のJST 00:00に通知
   notificationTimes.push({
     time: threeDaysBeforeTimestamp,
     type: 'three_days_before' as const,
   });
 
-  // 当日00:00に通知（00:00指定の場合は前日00:00）
   let dayOfNotificationDate: Date;
   if (hour === 0 && minute === 0) {
-    // 00:00指定の場合は前日の00:00に通知
-    dayOfNotificationDate = new Date(actualDeadlineDate);
-    dayOfNotificationDate.setHours(0, 0, 0, 0);
+    // 00:00指定の場合は前日のJST 00:00に通知
+    const actualDeadlineJST = convertToJST(actualDeadlineDate);
+    const notificationDateStr = actualDeadlineJST.toISOString().split('T')[0];
+    dayOfNotificationDate = createJSTDate(notificationDateStr ?? '', 0, 0);
   } else {
-    // その他の場合は当日の00:00に通知
-    dayOfNotificationDate = new Date(`${dateStr}T00:00:00`);
+    // その他の場合は当日のJST 00:00に通知
+    dayOfNotificationDate = createJSTDate(dateStr, 0, 0);
   }
 
   notificationTimes.push({
